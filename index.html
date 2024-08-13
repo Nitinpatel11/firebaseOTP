@@ -108,76 +108,86 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-analytics.js";
-        import { getAuth, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-auth.js";
-    
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDdxO89QLjnPdcR9NOilcXs4qPPGrAld1c",
-            authDomain: "django-810fd.firebaseapp.com",
-            projectId: "django-810fd",
-            storageBucket: "django-810fd.appspot.com",
-            messagingSenderId: "907725485940",
-            appId: "1:907725485940:web:39c984a826b0950a305e21",
-            measurementId: "G-LW2C4843DC"
-        };
-    
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const auth = getAuth(app);
-    
-        const otpContainer = document.querySelector('.otp-container');
-        const mobileVerify = document.querySelector('.mobile-verify');
-        const boxVerify = document.querySelector('.box-verify');
-        const btnContinue = document.querySelector('.btn-continue');
-        const btnResend = document.querySelector('.btn-resend');
-        const btnVerify = document.querySelector('.btn-verify');
-        const btnBack = document.querySelector('.btn-back');
-        const phoneNumber = document.getElementById('phone-number');
-        const otpInput = document.querySelectorAll('.otp-input .input');
-        const containerContent = document.querySelector('.container-content');
-        const expireEle = document.querySelector('.expire');
-    
-        // OTP
-        let expire = 30;
-        let OTP;
-        let countdown;
-        let yourInputNumber = '';
-    
-        btnContinue.addEventListener('click', () => {
-            const phonenumber = "+91" + phoneNumber.value;
-    
-            // Call the Firebase signInWithPhoneNumber method
-            signInWithPhoneNumber(auth, phonenumber)
-                .then((confirmationResult) => {
-                    // SMS sent. Prompt user to type the code from the message, then sign the
-                    // user in with confirmationResult.confirm(code).
-                    window.confirmationResult = confirmationResult;
-                    // ...
-                }).catch((error) => {
-                    console.log(error, "logerror");
-                    // Error; SMS not sent
-                    // ...
-                });
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-analytics.js";
+    import { getAuth, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-auth.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyDdxO89QLjnPdcR9NOilcXs4qPPGrAld1c",
+        authDomain: "https://otpcheck1.netlify.app/",
+        projectId: "django-810fd",
+        storageBucket: "django-810fd.appspot.com",
+        messagingSenderId: "907725485940",
+        appId: "1:907725485940:web:39c984a826b0950a305e21",
+        measurementId: "G-LW2C4843DC"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    console.log(auth)
+    const otpContainer = document.querySelector('.otp-container');
+    const mobileVerify = document.querySelector('.mobile-verify');
+    const boxVerify = document.querySelector('.box-verify');
+    const btnContinue = document.querySelector('.btn-continue');
+    const btnResend = document.querySelector('.btn-resend');
+    const btnVerify = document.querySelector('.btn-verify');
+    const btnBack = document.querySelector('.btn-back');
+    const phoneNumber = document.getElementById('phone-number');
+    const otpInput = document.querySelectorAll('.otp-input .input');
+    const containerContent = document.querySelector('.container-content');
+    const expireEle = document.querySelector('.expire');
+
+      // OTP
+    let expire = 30;
+    let OTP;
+    let countdown;
+    let yourInputNumber = '';
+
+
+    btnContinue.addEventListener('click', () => {
+    const phonenumber = "+91" + phoneNumber.value;
+
+    signInWithPhoneNumber(auth, phonenumber)
+        .then((confirmationResult) => {
+            // Store confirmationResult globally so it's accessible later
+            window.confirmationResult = confirmationResult;
+            console.log('OTP sent successfully.');
+        }).catch((error) => {
+            console.error('Error sending OTP:', error);
+            alert('Failed to send OTP. Please try again.');
         });
-    
-        btnVerify.onclick = function () {
-            confirmationResult.confirm(otpInput.value).then(function (response) {
-                console.log(response);
-                var userobj = response.user;
-                var token = userobj.accessToken; // Updated to match Firebase Auth API
-                var provider = "phone";
-                var email = phoneNumber.value;
-                if (token != null && token != undefined && token != "") {
-                    sendDatatoServerPhp(email, provider, token, email);
-                }
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-        }
+});
+
+
+
+btnVerify.onclick = function () {
+    // Collect the OTP from input fields
+    const otpCode = Array.from(otpInput).map(input => input.value).join('');
+
+    if (window.confirmationResult) {
+        window.confirmationResult.confirm(otpCode).then((response) => {
+            console.log('OTP verified:', response);
+            var user = response.user;
+            var token = user.accessToken; // Firebase stores access token in this property
+            var provider = "phone";
+            var email = phoneNumber.value;
+            if (token) {
+                sendDatatoServerPhp(email, provider, token, email);
+            }
+        }).catch((error) => {
+            console.error('Error verifying OTP:', error);
+            alert('Invalid OTP. Please try again.');
+        });
+    } else {
+        console.error('confirmationResult is not defined.');
+        alert('Failed to verify OTP. Please try sending the OTP again.');
+    }
+};
+
     </script>
+
     
 
 </body>
