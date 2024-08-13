@@ -109,28 +109,24 @@
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-analytics.js";
-        import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-auth.js";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-
+        import { getAuth, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/9.9.4/firebase-auth.js";
+    
         // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
         const firebaseConfig = {
-  apiKey: "AIzaSyDdxO89QLjnPdcR9NOilcXs4qPPGrAld1c",
-  authDomain: "django-810fd.firebaseapp.com",
-  projectId: "django-810fd",
-  storageBucket: "django-810fd.appspot.com",
-  messagingSenderId: "907725485940",
-  appId: "1:907725485940:web:39c984a826b0950a305e21",
-  measurementId: "G-LW2C4843DC"
-};
-
+            apiKey: "AIzaSyDdxO89QLjnPdcR9NOilcXs4qPPGrAld1c",
+            authDomain: "django-810fd.firebaseapp.com",
+            projectId: "django-810fd",
+            storageBucket: "django-810fd.appspot.com",
+            messagingSenderId: "907725485940",
+            appId: "1:907725485940:web:39c984a826b0950a305e21",
+            measurementId: "G-LW2C4843DC"
+        };
+    
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const auth = getAuth(app);
-
-
+    
         const otpContainer = document.querySelector('.otp-container');
         const mobileVerify = document.querySelector('.mobile-verify');
         const boxVerify = document.querySelector('.box-verify');
@@ -142,65 +138,47 @@
         const otpInput = document.querySelectorAll('.otp-input .input');
         const containerContent = document.querySelector('.container-content');
         const expireEle = document.querySelector('.expire');
-
+    
         // OTP
         let expire = 30;
         let OTP;
         let countdown;
         let yourInputNumber = '';
-
-
+    
         btnContinue.addEventListener('click', () => {
-            window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
-                'size': 'normal',
-                'callback': (response) => {
-                    // reCAPTCHA solved, allow signInWithPhoneNumber.
-                    // ...
-                },
-                'expired-callback': () => {
-                    // Response expired. Ask user to solve reCAPTCHA again.
-                    // ...
-                }
-            }, auth);
-
-            recaptchaVerifier.render().then((widgetId) => {
-                window.recaptchaWidgetId = widgetId;
-            });
-            const phonenumber = "+91" + phoneNumber.value
-            const appVerifier = window.recaptchaVerifier;
-
-            signInWithPhoneNumber(auth, phonenumber, appVerifier)
+            const phonenumber = "+91" + phoneNumber.value;
+    
+            // Call the Firebase signInWithPhoneNumber method
+            signInWithPhoneNumber(auth, phonenumber)
                 .then((confirmationResult) => {
                     // SMS sent. Prompt user to type the code from the message, then sign the
                     // user in with confirmationResult.confirm(code).
                     window.confirmationResult = confirmationResult;
                     // ...
                 }).catch((error) => {
-                    console.log(error , "logerror")
+                    console.log(error, "logerror");
                     // Error; SMS not sent
                     // ...
                 });
-
-        })
-
-
+        });
+    
         btnVerify.onclick = function () {
-            confirmationResult.confirm(otpinput.value).then(function (response) {
+            confirmationResult.confirm(otpInput.value).then(function (response) {
                 console.log(response);
                 var userobj = response.user;
-                var token = userobj.xa;
+                var token = userobj.accessToken; // Updated to match Firebase Auth API
                 var provider = "phone";
                 var email = phoneNumber.value;
                 if (token != null && token != undefined && token != "") {
                     sendDatatoServerPhp(email, provider, token, email);
                 }
             })
-                .catch(function (error) {
-                    console.log(error);
-                })
+            .catch(function (error) {
+                console.log(error);
+            });
         }
-
     </script>
+    
 
 </body>
 
